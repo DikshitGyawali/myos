@@ -7,6 +7,7 @@
 #include <arch/i686/port_io.h>
 #include <drivers/pit.h>
 #include <drivers/keyboard.h>
+#include <memory/pmm.h>
 
 void Drivers_Init();
 
@@ -18,6 +19,7 @@ void HAL_Init(){
     i686_IRQ_Init();
     
     Drivers_Init();
+    PMM_Init();
     i686_EnableInterrupts();
 }
 

@@ -61,5 +61,12 @@ typedef struct
   uint32_t type;
 } __attribute__((packed)) multiboot_mmap_entry;
 
+
+const MultibootInfo* getMultibootInfo();
+
+extern char __kernel_start[];
+extern char __kernel_end[];
+
+
 #define CHECK_FLAG(flags,bit)   ((flags) & (1 << (bit)))
 #endif // BOOT_INFO_H

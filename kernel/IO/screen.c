@@ -66,7 +66,7 @@ void print_int(int num) {
 }
 void print_hex(uint32_t num) {
     if (num == 0) {
-        putchar('0'); putchar('x'); putchar('0');
+        putchar('0');
         return;
     }
 
@@ -78,7 +78,7 @@ void print_hex(uint32_t num) {
         buffer[i++] = (digit < 10) ? ('0' + digit) : ('A' + digit - 10);
         num /= 16;
     }
-    putchar('0'); putchar('x');
+    
     for (int j = i - 1; j >= 0; j--) {
         putchar(buffer[j]);
     }
