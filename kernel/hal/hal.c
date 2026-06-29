@@ -8,18 +8,26 @@
 #include <drivers/pit.h>
 #include <drivers/keyboard.h>
 #include <memory/pmm.h>
+#include <memory/paging.h>
 
 void Drivers_Init();
 
 void HAL_Init(){
     kprintf("Initializing HAL...\n");
+    kprintf("Initializing GDT...\n");
     i686_GDT_Init();
+    kprintf("Initializing IDT...\n");
     i686_IDT_Init();
+    kprintf("Initializing ISR...\n");
     i686_ISR_Init();
+    kprintf("Initializing IRQ...\n");
     i686_IRQ_Init();
-    
+    kprintf("Initializing Drivers...\n");
     Drivers_Init();
+    kprintf("Initializing PMM...\n");
     PMM_Init();
+    kprintf("Enabling Paging...\n");
+    Paging_Init();
     i686_EnableInterrupts();
 }
 

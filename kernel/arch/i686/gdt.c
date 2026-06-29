@@ -1,5 +1,4 @@
 #include <arch/i686/gdt.h>
-#include <IO/screen.h>
 #include <stdint.h>
 typedef struct{
     uint16_t limit_low; // The lower 16 bits of the limit.
@@ -73,6 +72,5 @@ void i686_GDT_Load(GDTDescriptor *gdtDescriptor, uint16_t codeSegment, uint16_t 
 
 
 void i686_GDT_Init() {
-    kprintf("Initializing GDT...\n");
     i686_GDT_Load(&g_GDTDescriptor, i686_GDT_CODE_SEGMENT, i686_GDT_DATA_SEGMENT);
 }

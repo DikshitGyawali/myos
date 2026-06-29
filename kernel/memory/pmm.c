@@ -6,12 +6,12 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#define BLOCK_SIZE 4096
-#define MAX_RESERVED_REGIONS 256
-
 uint8_t *g_bitmap;
 uint32_t g_bitmap_size;
 uint32_t g_total_frames;
+
+#define MAX_RESERVED_REGIONS 256
+
 
 typedef struct
 {
@@ -30,6 +30,10 @@ static inline void PMM_ClearFrame(uint32_t frame){
 }
 static inline bool PMM_TestFrame(uint32_t frame){
     return (g_bitmap[frame / 8] & (1 << (frame % 8))) != 0;
+}
+
+uintptr_t getbitmapEnd(){
+    return ((uintptr_t)g_bitmap + g_bitmap_size + BLOCK_SIZE - 1) & ~(BLOCK_SIZE - 1);
 }
 
 
@@ -59,12 +63,8 @@ void Bitmap_Init(MultibootInfo const *mbi){
         mmap = (multiboot_mmap_entry *) ((uintptr_t) mmap + mmap->size + sizeof (mmap->size));
     }
 
-    kprintf("\nFinal Address: %x\n", highest_address - 1);
-
     g_total_frames = (highest_address + BLOCK_SIZE - 1)/ BLOCK_SIZE;
     g_bitmap_size = (g_total_frames + 7) / 8;
-    kprintf("TotalFrames: %x\n", g_total_frames);
-    kprintf("BitMapSize: %x\n", g_bitmap_size);
 
     memset(g_bitmap, 0xFF, g_bitmap_size);
 }
@@ -116,6 +116,7 @@ void PMM_Init(){
     Bitmap_Setup(mbi);
     Reserve_Kernel();
     Reserve_MultibootInfo(mbi);
+    PMM_PermanentReserveRange(0, 256); // form 0 to 1MB
 }
 
 static uint32_t frame_index = 0;
@@ -125,8 +126,9 @@ uintptr_t PMM_alloc_frame(){
     while (frame_index < g_total_frames){
         if (!PMM_TestFrame(frame_index)){
             PMM_SetFrame(frame_index);
+            uint32_t temp =frame_index;
             frame_index++;
-            return frame_index * BLOCK_SIZE;
+            return (uintptr_t)temp * BLOCK_SIZE;
         }
         frame_index++;
     }
@@ -134,8 +136,9 @@ uintptr_t PMM_alloc_frame(){
     while (frame_index < first_frame){
         if (!PMM_TestFrame(frame_index)){
             PMM_SetFrame(frame_index);
+            uint32_t temp =frame_index;
             frame_index++;
-            return (uintptr_t)frame_index * BLOCK_SIZE;
+            return (uintptr_t)temp * BLOCK_SIZE;
         }
         frame_index++;
     }
