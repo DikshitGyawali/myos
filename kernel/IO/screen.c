@@ -1,17 +1,20 @@
 #include <IO/screen.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include <arch/i686/port_io.h>
 
 #define MAX_X 80
 #define MAX_Y 25
+
+#define KERNEL_BASE 0xC0000000
+#define VGA_MEMORY ((volatile char*)(KERNEL_BASE + 0xB8000))
+
 static uint16_t cursor_pos = 0;
 
 void putchar_withcolor(char c, uint16_t color) {
-    volatile char *video = (volatile char*)0xB8000;
+    volatile char *video = VGA_MEMORY;
     if (c == '\n') {
-        video[cursor_pos] = c;
-        video[cursor_pos] = color;
-        cursor_pos += 160 - (cursor_pos % 160); // Move to the start of the next line
+        cursor_pos += 160 - ((cursor_pos) % 160); // Move to the start of the next line
         return;
     }
     if (c == '\t') {
@@ -21,16 +24,18 @@ void putchar_withcolor(char c, uint16_t color) {
     if (c == '\b'){
         if (cursor_pos == 0) return;
         cursor_pos -=2;
-        video[cursor_pos] = (color << 8) | ' ';
+        video[cursor_pos++] = ' ';
+        video[cursor_pos++] = color;
+        cursor_pos -=2;
         return;
     }
     video[cursor_pos++] = c;
-    video[cursor_pos++] = color; 
+    video[cursor_pos++] = color;
 }
 
 
 void putchar(char c){
-    putchar_withcolor(c, 0x07); // Light grey on black
+    putchar_withcolor(c, VGA_LIGHT_GREY);
 }
 
 
@@ -41,7 +46,7 @@ void print(const char *str) {
 }
 
 void clear_screen() {
-    volatile char *video = (volatile char*)0xB8000;
+    volatile char *video = VGA_MEMORY;
     for (int i = 0; i < 80*25*2; i++) video[i] = 0;
     cursor_pos = 0;
 }
@@ -114,7 +119,7 @@ void kprintf(const char* fmt, ...)
             break;
 
         case 'x':
-            int32_t x = va_arg(args, int32_t);
+            uint32_t x = va_arg(args, uint32_t);
             print_hex(x);
             break;
         case 'b':

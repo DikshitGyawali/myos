@@ -7,42 +7,21 @@
 uint32_t *pageDirectory;
 
 
-bool boot_map_page(uintptr_t virtual_address, uintptr_t physical_address, uint32_t flags);
+// void Paging_Init(){
+//     pageDirectory =  (uint32_t *)PMM_alloc_frame();
+//     memset(pageDirectory, 0, BLOCK_SIZE);
+//     pageDirectory[1023] = (uint32_t)pageDirectory | 0x03;
+//     uintptr_t end = getbitmapEnd();
+//     for (uintptr_t i = 0; i < end; i = i + BLOCK_SIZE){
+//         map_page(i, i, 0x03);
+//     }
+//     asm volatile ("mov %0, %%cr3" : : "r"((uint32_t)pageDirectory));
+//     uint32_t cr0;
+//     asm volatile ("mov %%cr0, %0" : "=r"(cr0));
+//     cr0 |= (1 << 31);
+//     asm volatile ("mov %0, %%cr0" : : "r"(cr0));
+// }
 
-void Paging_Init(){
-    pageDirectory =  (uint32_t *)PMM_alloc_frame();
-    memset(pageDirectory, 0, BLOCK_SIZE);
-    pageDirectory[1023] = (uint32_t)pageDirectory | 0x03;
-    uintptr_t end = getbitmapEnd();
-    for (uintptr_t i = 0; i < end; i = i + BLOCK_SIZE){
-        boot_map_page(i, i, 0x03);
-    }
-    asm volatile ("mov %0, %%cr3" : : "r"((uint32_t)pageDirectory));
-    uint32_t cr0;
-    asm volatile ("mov %%cr0, %0" : "=r"(cr0));
-    cr0 |= (1 << 31);
-    asm volatile ("mov %0, %%cr0" : : "r"(cr0));
-}
-
-
-
-bool boot_map_page(uintptr_t virtual_address, uintptr_t physical_address, uint32_t flags){
-
-    if ((physical_address & 0xFFF) != 0) return false;
-
-    uint16_t directory_index = virtual_address >> 22;
-    uint16_t table_index = (virtual_address >> 12) & 0x3FF;
-
-    if (!(pageDirectory[directory_index] & 0x1)){
-        uintptr_t newPageTable_address = PMM_alloc_frame();
-        if(newPageTable_address == 0) return false;
-        memset((uintptr_t *)newPageTable_address, 0, BLOCK_SIZE);
-        pageDirectory[directory_index] = newPageTable_address | 0x3;
-    }
-    uint32_t *pageTable = (uint32_t *)(pageDirectory[directory_index] & 0xFFFFF000);
-    pageTable[table_index] = physical_address | flags | 0x1;
-    return true;
-}
 
 bool map_page(uintptr_t virtual_address, uintptr_t physical_address, uint32_t flags){
 

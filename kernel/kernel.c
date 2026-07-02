@@ -5,21 +5,14 @@
 #include <memory/boot_info.h>
 
 
-static const MultibootInfo* multiboot_info;
-
-const MultibootInfo* getMultibootInfo() {
-    return multiboot_info;
-}
-
-
-void kernel_main(uint32_t magic, uint32_t mbi_addr){
-    (void)magic;
-    multiboot_info = (MultibootInfo*) mbi_addr;
-    clear_screen();
+void kernel_main(){
     HAL_Init();
 
-    kprintf("Kernel start: %x\n", (uint32_t)&__kernel_start);
-    kprintf("Kernel end: %x\n", (uint32_t)&__kernel_end);
+    kprintf("Kernel real start: %x\n", (uint32_t)&_kernel_phys_start);
+    kprintf("Kernel real end: %x\n", (uint32_t)&_kernel_phys_end);
+    
+    kprintf("Kernel virtual start: %x\n", (uint32_t)&_kernel_virt_start);
+    kprintf("Kernel virtual end: %x\n", (uint32_t)&_kernel_virt_end);
     
     shell_Init();
     

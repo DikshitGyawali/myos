@@ -24,10 +24,7 @@ void HAL_Init(){
     i686_IRQ_Init();
     kprintf("Initializing Drivers...\n");
     Drivers_Init();
-    kprintf("Initializing PMM...\n");
-    PMM_Init();
-    kprintf("Enabling Paging...\n");
-    Paging_Init();
+    
     i686_EnableInterrupts();
 }
 

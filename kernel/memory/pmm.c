@@ -6,12 +6,14 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+
+#define MAX_RESERVED_REGIONS 256
+
 uint8_t *g_bitmap;
 uint32_t g_bitmap_size;
 uint32_t g_total_frames;
 
-#define MAX_RESERVED_REGIONS 256
-
+static const MultibootInfo* multiboot_info;
 
 typedef struct
 {
@@ -36,6 +38,11 @@ uintptr_t getbitmapEnd(){
     return ((uintptr_t)g_bitmap + g_bitmap_size + BLOCK_SIZE - 1) & ~(BLOCK_SIZE - 1);
 }
 
+const MultibootInfo* getMultibootInfo() {
+    return multiboot_info;
+}
+
+
 
 void PMM_PermanentReserveRange(uint32_t startFrame, uint32_t endFrame){
     for(uint32_t frame = startFrame; frame < endFrame; frame++){
@@ -45,8 +52,9 @@ void PMM_PermanentReserveRange(uint32_t startFrame, uint32_t endFrame){
     return;
 }
 
-void Bitmap_Init(MultibootInfo const *mbi){
-    uintptr_t bitmap_base = (uintptr_t)&__kernel_end;
+void Bitmap_Init(){
+    MultibootInfo const *mbi = multiboot_info;
+    uintptr_t bitmap_base = (uintptr_t)&_kernel_virt_end;
     bitmap_base = (bitmap_base + BLOCK_SIZE - 1) & ~(BLOCK_SIZE - 1);
     g_bitmap = (uint8_t *)bitmap_base;
 
@@ -69,7 +77,8 @@ void Bitmap_Init(MultibootInfo const *mbi){
     memset(g_bitmap, 0xFF, g_bitmap_size);
 }
 
-void Bitmap_Setup(MultibootInfo const *mbi){
+void Bitmap_Setup(){
+    MultibootInfo const *mbi = multiboot_info;
     multiboot_mmap_entry *mmap;
     mmap = (multiboot_mmap_entry *) mbi->mmap_addr;
     while((uintptr_t) mmap < (uintptr_t) mbi->mmap_addr + mbi->mmap_length){
@@ -90,13 +99,14 @@ void Bitmap_Setup(MultibootInfo const *mbi){
 }
 
 void Reserve_Kernel(){
-    uint32_t start = (uintptr_t)&__kernel_start / BLOCK_SIZE;
+    uint32_t start = (uintptr_t)&_kernel_virt_start / BLOCK_SIZE;
     uint32_t end = ((uintptr_t)g_bitmap + g_bitmap_size + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
     PMM_PermanentReserveRange(start, end);
 }
 
-void Reserve_MultibootInfo(MultibootInfo const *mbi){
+void Reserve_MultibootInfo(){
+    MultibootInfo const *mbi = multiboot_info;
     uint32_t start = (uintptr_t)mbi / BLOCK_SIZE;
     uint32_t end = ((uintptr_t)mbi + sizeof(MultibootInfo) + BLOCK_SIZE - 1) / BLOCK_SIZE;
     PMM_PermanentReserveRange(start, end);
@@ -106,16 +116,16 @@ void Reserve_MultibootInfo(MultibootInfo const *mbi){
     PMM_PermanentReserveRange(start, end);
 }
 
-void PMM_Init(){
-    MultibootInfo const *mbi;
-    mbi = getMultibootInfo();
+void PMM_Init(const MultibootInfo* mbi){
+    //kprintf("Initilizing PMM...\n");
+    multiboot_info = mbi;
     if (!CHECK_FLAG (mbi->flags, 6)){
         return;
     }
-    Bitmap_Init(mbi);
-    Bitmap_Setup(mbi);
+    Bitmap_Init();
+    Bitmap_Setup();
     Reserve_Kernel();
-    Reserve_MultibootInfo(mbi);
+    Reserve_MultibootInfo();
     PMM_PermanentReserveRange(0, 256); // form 0 to 1MB
 }
 

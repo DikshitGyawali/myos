@@ -16,7 +16,7 @@
   },
   "terminal.integrated.defaultProfile.windows": "MSYS2 UCRT64",
   "files.associations": {
-    "*.asm": "asm",
+    "*.asm": "asm-intel-x86-generic",
     "*.inc": "asm"
   }
 }
