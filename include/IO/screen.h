@@ -31,6 +31,5 @@ void clear_screen();
 void print_int(int num);
 void print_hex(uint32_t num);
 void kprintf(const char* fmt, ...);
-void panic(const char *message);
 
 #endif // SCREEN_H

@@ -14,7 +14,7 @@ enum{ // control word 1
     PIC_ICW1_SINGLE = 0x02,
     PIC_ICW1_INTERVAL4 = 0x04,
     PIC_ICW1_LEVEL = 0x08,
-    PIC_ICW1_INITIALIZE = 0x10,
+    PIC_ICW1_initIALIZE = 0x10,
 } PIC_ICW1;
 
 enum{
@@ -62,9 +62,9 @@ void i8259_Configure(uint8_t offsetPic1, uint8_t offsetPic2, bool autoEOI){
     i8259_Disable();
 
     // initialize control word 1
-    i686_outb(PIC1_COMMAND_PORT, PIC_ICW1_ICW4 | PIC_ICW1_INITIALIZE);
+    i686_outb(PIC1_COMMAND_PORT, PIC_ICW1_ICW4 | PIC_ICW1_initIALIZE);
     i686_iowait();
-    i686_outb(PIC2_COMMAND_PORT, PIC_ICW1_ICW4 | PIC_ICW1_INITIALIZE);
+    i686_outb(PIC2_COMMAND_PORT, PIC_ICW1_ICW4 | PIC_ICW1_initIALIZE);
     i686_iowait();
 
     // initialize control word 2 - offsets

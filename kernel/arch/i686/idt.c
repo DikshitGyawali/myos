@@ -39,6 +39,6 @@ void i686_IDT_DisableGate(int interrupt){
     FLAGUNSET(g_IDT[interrupt].flags, IDT_FLAG_PRESENT);
 }
 
-void i686_IDT_Init(){
+void i686_IDT_init(){
     i686_IDT_Load(&g_IDTDescriptor);
 }

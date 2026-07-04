@@ -68,7 +68,7 @@ extern char _kernel_phys_start[];
 extern char _kernel_virt_start[];
 extern char _kernel_phys_end[];
 extern char _kernel_virt_end[];
-
+extern char HIGHER_HALF[];
 
 #define CHECK_FLAG(flags,bit)   ((flags) & (1 << (bit)))
 #endif // BOOT_INFO_H

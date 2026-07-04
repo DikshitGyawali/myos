@@ -71,6 +71,6 @@ __attribute__((cdecl))
 void i686_GDT_Load(GDTDescriptor *gdtDescriptor, uint16_t codeSegment, uint16_t dataSegment);
 
 
-void i686_GDT_Init() {
+void i686_GDT_init() {
     i686_GDT_Load(&g_GDTDescriptor, i686_GDT_CODE_SEGMENT, i686_GDT_DATA_SEGMENT);
 }

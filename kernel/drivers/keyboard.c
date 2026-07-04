@@ -62,7 +62,7 @@ void Keyboard_Handler(Registers* regs){
 }
 
 
-void Keyboard_Init()
+void Keyboard_init()
 {
     i686_IRQ_RegisterHandler(1, Keyboard_Handler);
 }

@@ -9,10 +9,13 @@
 #define KERNEL_BASE 0xC0000000
 #define VGA_MEMORY ((volatile char*)(KERNEL_BASE + 0xB8000))
 
-static uint16_t cursor_pos = 0;
+static volatile uint16_t cursor_pos = 0;
 
 void putchar_withcolor(char c, uint16_t color) {
     volatile char *video = VGA_MEMORY;
+
+    if(cursor_pos >= ((uint32_t)VGA_MEMORY + 4000)) return;
+
     if (c == '\n') {
         cursor_pos += 160 - ((cursor_pos) % 160); // Move to the start of the next line
         return;
@@ -135,10 +138,3 @@ void kprintf(const char* fmt, ...)
 }
 
 
-void panic(const char *message) {
-    kprintf("Error: %s\nSystem halted.", message);
-    __asm__("cli");
-    while (1) {
-        __asm__("hlt");
-    }
-}

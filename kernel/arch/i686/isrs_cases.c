@@ -262,7 +262,7 @@ void __attribute__((cdecl)) i686_ISR255();
 
 
 
-void i686_ISR_Initialize_Gates()
+void i686_ISR_initialize_Gates()
 {
     i686_IDT_SetGate(0, i686_ISR0, i686_GDT_CODE_SEGMENT, IDT_FLAG_RING0| IDT_FLAG_GATE_32BIT_INTERRUPT);
     i686_IDT_SetGate(1, i686_ISR1, i686_GDT_CODE_SEGMENT, IDT_FLAG_RING0| IDT_FLAG_GATE_32BIT_INTERRUPT);

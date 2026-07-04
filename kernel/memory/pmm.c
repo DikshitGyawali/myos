@@ -1,8 +1,7 @@
 #include <memory/pmm.h>
 #include <stdint.h>
 #include <memory/boot_info.h>
-#include <IO/screen.h>
-#include <libs/memory.h>
+#include <libs/mem_utils.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -34,8 +33,9 @@ static inline bool PMM_TestFrame(uint32_t frame){
     return (g_bitmap[frame / 8] & (1 << (frame % 8))) != 0;
 }
 
-uintptr_t getbitmapEnd(){
-    return ((uintptr_t)g_bitmap + g_bitmap_size + BLOCK_SIZE - 1) & ~(BLOCK_SIZE - 1);
+static uintptr_t firstUnreserved;
+uintptr_t firstunReserved(){
+    return firstUnreserved;
 }
 
 const MultibootInfo* getMultibootInfo() {
@@ -49,10 +49,13 @@ void PMM_PermanentReserveRange(uint32_t startFrame, uint32_t endFrame){
         PMM_SetFrame(frame);
     }
     g_reserved[g_reserved_counter++] = (Reserved_Frames){startFrame, endFrame};
+
+    if((firstUnreserved / 0x1000) < endFrame) firstUnreserved = (endFrame * 0x1000);
+
     return;
 }
 
-void Bitmap_Init(){
+void Bitmap_init(){
     MultibootInfo const *mbi = multiboot_info;
     uintptr_t bitmap_base = (uintptr_t)&_kernel_virt_end;
     bitmap_base = (bitmap_base + BLOCK_SIZE - 1) & ~(BLOCK_SIZE - 1);
@@ -99,8 +102,9 @@ void Bitmap_Setup(){
 }
 
 void Reserve_Kernel(){
-    uint32_t start = (uintptr_t)&_kernel_virt_start / BLOCK_SIZE;
-    uint32_t end = ((uintptr_t)g_bitmap + g_bitmap_size + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    uint32_t start = (uintptr_t)&_kernel_phys_start / BLOCK_SIZE;
+    uintptr_t kernel_end_aligned = ((uintptr_t)&_kernel_phys_end + BLOCK_SIZE - 1) & ~(BLOCK_SIZE - 1);
+    uint32_t end = (kernel_end_aligned + g_bitmap_size + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
     PMM_PermanentReserveRange(start, end);
 }
@@ -116,17 +120,16 @@ void Reserve_MultibootInfo(){
     PMM_PermanentReserveRange(start, end);
 }
 
-void PMM_Init(const MultibootInfo* mbi){
-    //kprintf("Initilizing PMM...\n");
+void PMM_init(const MultibootInfo* mbi){
     multiboot_info = mbi;
     if (!CHECK_FLAG (mbi->flags, 6)){
         return;
     }
-    Bitmap_Init();
+    Bitmap_init();
     Bitmap_Setup();
     Reserve_Kernel();
     Reserve_MultibootInfo();
-    PMM_PermanentReserveRange(0, 256); // form 0 to 1MB
+    PMM_PermanentReserveRange(0, 1024); // form 0 to 4MB
 }
 
 static uint32_t frame_index = 0;

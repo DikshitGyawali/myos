@@ -3,11 +3,11 @@
 #include <memory/boot_info.h>
 #include <stdbool.h>
 #include <stdint.h>
-void PMM_Init(const MultibootInfo* multiboot_info);
+void PMM_init(const MultibootInfo* multiboot_info);
 uintptr_t PMM_alloc_frame();
 bool PMM_free_frame(uintptr_t addr);
 
-uintptr_t getbitmapEnd();
+uintptr_t firstunReserved();
 
 #define BLOCK_SIZE 4096
 

@@ -62,7 +62,7 @@ void PIT_Sleep(uint32_t ms)
         __asm__("hlt");
 }
 
-void PIT_Init(uint32_t freq){
+void PIT_init(uint32_t freq){
     frequency = freq;
     uint16_t divisor = 1193182 / frequency;
     i686_outb(PIT_CR, PIT_COMMAND_CHANNEL0 | 

@@ -1,15 +1,16 @@
 #include <arch/i686/isr.h>
 #include <arch/i686/idt.h>
 #include <IO/screen.h>
+#include <panic.h>
 #include <stddef.h>
 
 ISRHandler g_ISRHandlers[256];
 
 
-void i686_ISR_Initialize_Gates();
+void i686_ISR_initialize_Gates();
 
-void i686_ISR_Init(){
-    i686_ISR_Initialize_Gates();
+void i686_ISR_init(){
+    i686_ISR_initialize_Gates();
     for (int i = 0; i < 255; ++i){
         i686_IDT_EnableGate(i);
     }
@@ -43,7 +44,7 @@ void __attribute__((cdecl)) i686_ISR_Handler(Registers* regs){
 
         kprintf("Errorcode: %x\n", regs->error);
 
-        panic("Kernel Panic");
+        panic("Kernel Panic", __FILE__, __LINE__);
     }
 }
 

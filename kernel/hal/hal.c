@@ -10,26 +10,20 @@
 #include <memory/pmm.h>
 #include <memory/paging.h>
 
-void Drivers_Init();
+void Drivers_init();
 
-void HAL_Init(){
-    kprintf("Initializing HAL...\n");
-    kprintf("Initializing GDT...\n");
-    i686_GDT_Init();
-    kprintf("Initializing IDT...\n");
-    i686_IDT_Init();
-    kprintf("Initializing ISR...\n");
-    i686_ISR_Init();
-    kprintf("Initializing IRQ...\n");
-    i686_IRQ_Init();
-    kprintf("Initializing Drivers...\n");
-    Drivers_Init();
-    
+void HAL_init(){
+    i686_GDT_init();
+    i686_IDT_init();
+    i686_ISR_init();
+    i686_IRQ_init();
+    Drivers_init();
+
     i686_EnableInterrupts();
 }
 
-void Drivers_Init(){
-    PIT_Init(100);
-    Keyboard_Init();
+void Drivers_init(){
+    PIT_init(100);
+    Keyboard_init();
 }
 

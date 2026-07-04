@@ -8,7 +8,7 @@ typedef struct {
     CommandHandler handler;
 } ShellCommand;
 
-void shell_Init();
+void shell_init();
 void shell_RegisterCommand(ShellCommand cmd);
 
 

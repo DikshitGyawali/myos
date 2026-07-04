@@ -2,7 +2,7 @@
 #define HAL_H
 
 
-void HAL_Init();
+void HAL_init();
 
 
 

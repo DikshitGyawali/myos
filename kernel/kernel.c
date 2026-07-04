@@ -3,18 +3,15 @@
 #include <shell/shell.h>
 #include <stdint.h>
 #include <memory/boot_info.h>
+#include <memory/heap.h>
 
 
 void kernel_main(){
-    HAL_Init();
+    clear_screen();
+    HAL_init();
+    heap_init();
 
-    kprintf("Kernel real start: %x\n", (uint32_t)&_kernel_phys_start);
-    kprintf("Kernel real end: %x\n", (uint32_t)&_kernel_phys_end);
-    
-    kprintf("Kernel virtual start: %x\n", (uint32_t)&_kernel_virt_start);
-    kprintf("Kernel virtual end: %x\n", (uint32_t)&_kernel_virt_end);
-    
-    shell_Init();
+    shell_init();
     
     while (1) {
         __asm__("hlt");

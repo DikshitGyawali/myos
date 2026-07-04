@@ -25,7 +25,7 @@ void i686_IDT_DisableGate(int interrupt);
 void i686_IDT_SetGate(uint8_t interrupt_num, void* function_ptr, uint16_t segment_selector, uint8_t flags);
 
 
-void i686_IDT_Init();
+void i686_IDT_init();
 
 
 

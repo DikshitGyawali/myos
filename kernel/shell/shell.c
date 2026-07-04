@@ -68,7 +68,7 @@ void shell_execute(char* cmd)
 }
 
 
-void shell_Init() // called by kernel
+void shell_init() // called by kernel
 {
     basic_commands();
     char buffer[128];

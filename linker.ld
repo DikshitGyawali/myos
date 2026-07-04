@@ -32,6 +32,7 @@ PHDRS
 
 SECTIONS
 {
+    HIGHER_HALF = 0xC0000000;
     . = KERNEL_PHYS;
     _kernel_phys_start = .;
     _kernel_virt_start = _kernel_phys_start + HIGHER_HALF;

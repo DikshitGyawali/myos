@@ -23,7 +23,7 @@ void i686_IRQ_Handler(Registers* regs){
 }
 
 
-void i686_IRQ_Init(){
+void i686_IRQ_init(){
 
     const PICDriver* drivers[] = {
         i8259_GetDriver(),

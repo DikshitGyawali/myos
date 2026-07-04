@@ -3,6 +3,6 @@
 
 #include <stdint.h>
 
-void PIT_Init(uint32_t frequency);
+void PIT_init(uint32_t frequency);
 
 #endif

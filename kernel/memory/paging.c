@@ -1,39 +1,27 @@
 #include <memory/pmm.h>
-#include <libs/memory.h>
+#include <libs/mem_utils.h>
+#include <IO/screen.h>
 
 #define PD_BASE_ADDRESS ((uint32_t*)0xFFFFF000)
 #define PT_BASE_ADDRESS ((uint32_t*)0xFFC00000)
 
-uint32_t *pageDirectory;
-
-
-// void Paging_Init(){
-//     pageDirectory =  (uint32_t *)PMM_alloc_frame();
-//     memset(pageDirectory, 0, BLOCK_SIZE);
-//     pageDirectory[1023] = (uint32_t)pageDirectory | 0x03;
-//     uintptr_t end = getbitmapEnd();
-//     for (uintptr_t i = 0; i < end; i = i + BLOCK_SIZE){
-//         map_page(i, i, 0x03);
-//     }
-//     asm volatile ("mov %0, %%cr3" : : "r"((uint32_t)pageDirectory));
-//     uint32_t cr0;
-//     asm volatile ("mov %%cr0, %0" : "=r"(cr0));
-//     cr0 |= (1 << 31);
-//     asm volatile ("mov %0, %%cr0" : : "r"(cr0));
-// }
-
 
 bool map_page(uintptr_t virtual_address, uintptr_t physical_address, uint32_t flags){
-
+    kprintf("Map Input: V=%x, P=%x, F=%x\n", virtual_address, physical_address, flags);
     if ((physical_address & 0xFFF) != 0) return false;
 
     uint32_t directory_index = virtual_address >> 22;
     uint32_t table_index = (virtual_address >> 12) & 0x3FF;
-    
+    bool new_table_created = false;
+    uintptr_t newPageTable_address;
     if ((PD_BASE_ADDRESS[directory_index] & 0x1) == 0){
-        uintptr_t newPageTable_address = PMM_alloc_frame();
+        newPageTable_address = PMM_alloc_frame();
+        new_table_created = true;
+
         if(newPageTable_address == 0) return false;
         PD_BASE_ADDRESS[directory_index] = newPageTable_address | 0x3;
+
+        asm volatile("mov %%cr3, %%eax\nmov %%eax, %%cr3"::: "eax", "memory");
 
         // zero out the page table
         uint32_t* page_table = (uint32_t *)((uintptr_t)PT_BASE_ADDRESS + (directory_index * 0x1000)); // virtual memory
@@ -41,7 +29,50 @@ bool map_page(uintptr_t virtual_address, uintptr_t physical_address, uint32_t fl
     }
 
     uint32_t* page_table = (uint32_t*)((uint32_t)PT_BASE_ADDRESS + (directory_index * 0x1000));
+    
+    if (page_table[table_index] & 0x1){
+        if (new_table_created)
+        {
+            PD_BASE_ADDRESS[directory_index] = 0;
+            PMM_free_frame(newPageTable_address);
+            asm volatile("mov %%cr3, %%eax\nmov %%eax, %%cr3"::: "eax", "memory");
+        }
+        return false;
+    }
+
     page_table[table_index] = physical_address | (flags & 0xFFF) | 0x1;
+
+    asm volatile("mov %%cr3, %%eax\nmov %%eax, %%cr3"::: "eax", "memory");
+
+    return true;
+}
+
+uintptr_t get_physical_address(uintptr_t virtual_address){
+    uint32_t directory_index = virtual_address >> 22;
+    uint32_t table_index = (virtual_address >> 12) & 0x3FF;
+    uint32_t offset = virtual_address & 0xFFF;
+
+    if ((PD_BASE_ADDRESS[directory_index] & 0x1) == 0) return 0;
+
+    uint32_t *page_table = (uint32_t *)((uintptr_t)PT_BASE_ADDRESS + directory_index * BLOCK_SIZE);
+
+    if ((page_table[table_index] & 0x1) == 0) return 0;
+
+    return (page_table[table_index] & ~0xFFF) | offset;
+}
+
+
+bool unmap_page(uintptr_t virtual_address){
+    uint32_t directory_index = virtual_address >> 22;
+    uint32_t table_index = (virtual_address >> 12) & 0x3FF;
+
+    if ((PD_BASE_ADDRESS[directory_index] & 0x1) == 0) return false;
+
+    uint32_t *page_table = (uint32_t *)((uintptr_t)PT_BASE_ADDRESS + directory_index * BLOCK_SIZE);
+
+    if ((page_table[table_index] & 0x1) == 0) return false;
+
+    page_table[table_index] = 0;
 
     asm volatile ("invlpg (%0)" :: "r"(virtual_address) : "memory");
 
