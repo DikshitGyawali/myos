@@ -1,6 +1,10 @@
 [bits 32]
 
+extern need_resched
+extern running
+
 extern i686_ISR_Handler
+extern switch_task
 
 %macro ISR_NOERRORCODE 1
 global i686_ISR%1
@@ -22,7 +26,7 @@ i686_ISR%1:
 
 
 isr_common:
-
+    cli
     pusha ; push edi, esi, ebp, esp, ebx, edx, ecx, eax
 
     xor eax, eax
@@ -39,6 +43,19 @@ isr_common:
     call i686_ISR_Handler
     add esp, 4 ; removes the stack pointer
 
+    cmp byte [need_resched], 0
+    jz restore
+    ; context switching
+    mov byte [need_resched], 0
+    mov ebx, [running] ; old tcb
+    call switch_task
+    mov ecx, [running] ; new tcb
+
+    mov [ebx + 4], esp
+    mov esp, [ecx + 4]
+
+
+restore:
     pop eax ; get the previous ds, and restore the previous segments
     mov ds, ax
     mov es, ax

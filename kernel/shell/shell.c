@@ -1,15 +1,16 @@
 #include <drivers/keyboard.h>
 #include <IO/screen.h>
 #include <shell/shell.h>
+#include <task/task.h>
 #include <stddef.h>
 
 #define MAX_COMMAND_SIZE 256
 
 ShellCommand g_CMDHandler[MAX_COMMAND_SIZE];
 
-
 void shell_CMD_Handler(char* command_name, char* args);
 void basic_commands();
+
 int strcmp(const char* a, const char* b){
     while (*a && *b){
         if (*a != *b)
@@ -45,7 +46,6 @@ void shell_ReadLine(char* buf, int max){
     }
 }
 
-
 void shell_execute(char* cmd)
 {
     if(cmd[0] == '\0') return;
@@ -67,19 +67,24 @@ void shell_execute(char* cmd)
     kprintf("Command too long\n");
 }
 
+void shell();
 
 void shell_init() // called by kernel
 {
     basic_commands();
-    char buffer[128];
+    if (!create_task(shell)) kprintf("Error: Failed to load Shell\n");
+}
 
-    while (1)
+static char shell_buffer[128];
+static bool exit = false;
+void shell(){
+    while (!exit)
     {
         putchar_withcolor('>', 0x03);
         putchar(' ');
 
-        shell_ReadLine(buffer, 128);
-        shell_execute(buffer);
+        shell_ReadLine(shell_buffer, 128);
+        shell_execute(shell_buffer);
     }
 }
 
@@ -131,9 +136,15 @@ void echo(char* args){
     kprintf("%s\n", args);
 }
 
+void exit_shell(char* args){
+    (void)args;
+    exit = true;
+}
+
 void basic_commands(){
     shell_RegisterCommand((ShellCommand){"help", help});
     shell_RegisterCommand((ShellCommand){"echo", echo});
     shell_RegisterCommand((ShellCommand){"clear", clear});
     shell_RegisterCommand((ShellCommand){"crash", crash});
+    shell_RegisterCommand((ShellCommand){"exit", exit_shell});
 }

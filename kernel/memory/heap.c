@@ -158,7 +158,7 @@ void coalesce(block_header_t *blk){
     ASSERT(blk->size > MIN_BLOCK_SIZE);
     ASSERT((blk->size & 7) == 0);
 
-    block_header_t temp_structure = (block_header_t){0, false, {0, 0, 0}};
+    static block_header_t temp_structure = (block_header_t){0, false, {0, 0, 0}};
     block_header_t *prev_blk;
     if (blk == heap_start) prev_blk = &temp_structure;
     else prev_blk = PREV_BLOCK(blk);
