@@ -48,11 +48,15 @@ isr_common:
     ; context switching
     mov byte [need_resched], 0
     mov ebx, [running] ; old tcb
+    mov [ebx + 4], esp ; old esp
     call switch_task
-    mov ecx, [running] ; new tcb
 
-    mov [ebx + 4], esp
-    mov esp, [ecx + 4]
+    mov ecx, [running] ; new tcb
+    mov esp, [ecx + 4] ; new esp
+    test eax, eax
+    jz .no_reload
+    mov cr3, eax
+    .no_reload:
 
 
 restore:

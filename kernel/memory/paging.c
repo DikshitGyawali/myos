@@ -1,9 +1,7 @@
 #include <memory/pmm.h>
+#include <memory/paging.h>
 #include <libs/mem_utils.h>
 #include <IO/screen.h>
-
-#define PD_BASE_ADDRESS ((uint32_t*)0xFFFFF000)
-#define PT_BASE_ADDRESS ((uint32_t*)0xFFC00000)
 
 
 bool map_page(uintptr_t virtual_address, uintptr_t physical_address, uint32_t flags){
@@ -19,7 +17,7 @@ bool map_page(uintptr_t virtual_address, uintptr_t physical_address, uint32_t fl
         new_table_created = true;
 
         if(newPageTable_address == 0) return false;
-        PD_BASE_ADDRESS[directory_index] = newPageTable_address | 0x3;
+        PD_BASE_ADDRESS[directory_index] = newPageTable_address | flags; // changed from 0x03 to flags
 
         asm volatile("mov %%cr3, %%eax\nmov %%eax, %%cr3"::: "eax", "memory");
 
@@ -77,4 +75,25 @@ bool unmap_page(uintptr_t virtual_address){
     asm volatile ("invlpg (%0)" :: "r"(virtual_address) : "memory");
 
     return true;
+}
+
+
+void *temp_map(uintptr_t physical_address, uint32_t table_index){
+    uint32_t directory_index = TEMP_MAP_VADDR >> 22;
+    uint32_t *page_table = (uint32_t *)((uintptr_t)PT_BASE_ADDRESS + directory_index * BLOCK_SIZE);
+
+    page_table[table_index] = (physical_address & ~0xFFF) | 0x3;
+
+    uintptr_t vaddr = (directory_index << 22) | (table_index << 12);
+    asm volatile ("invlpg (%0)" :: "r"(vaddr) : "memory");
+    return (void *)vaddr;
+}
+
+void temp_unmap(uint32_t table_index){
+    uint32_t directory_index = TEMP_MAP_VADDR >> 22;
+
+    uint32_t *page_table = (uint32_t *)((uintptr_t)PT_BASE_ADDRESS + directory_index * BLOCK_SIZE);
+    page_table[table_index] = 0;
+
+    asm volatile ("invlpg (%0)" :: "r"(TEMP_MAP_VADDR) : "memory");
 }

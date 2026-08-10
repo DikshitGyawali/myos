@@ -72,7 +72,7 @@ void shell();
 void shell_init() // called by kernel
 {
     basic_commands();
-    if (!create_task(shell)) kprintf("Error: Failed to load Shell\n");
+    if (!create_process(shell, true)) kprintf("Error: Failed to load Shell\n");
 }
 
 static char shell_buffer[128];

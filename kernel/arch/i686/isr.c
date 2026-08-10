@@ -23,27 +23,10 @@ void __attribute__((cdecl)) i686_ISR_Handler(Registers* regs){
         g_ISRHandlers[regs->interrupt](regs);
     }
     else if (regs->interrupt >= 32){
-        kprintf("Interrupt: %x", regs->interrupt);
-
-        kprintf("eax = %x,\tebx = %x,\tecx = %x,\nedx = %x,\tesi = %x,\tedi = %x\n", 
-            regs->eax, regs->ebx, regs->ecx, regs->edx, regs->esi, regs->edi);
-        
-        kprintf("esp = %x, \tebp = %x, \teip = %x, \teflags = %x, \tcs = %x, \tds = %x, \tss = %x\n",
-            regs->esp, regs->ebp, regs->eip, regs->eflags, regs->cs, regs->ds, regs->ss);
-
-        kprintf("Errorcode: %x\n", regs->error);
+        printReg(regs);
     }
     else{
-        kprintf("Exception: %x \n", regs->interrupt);
-
-        kprintf("eax = %x,\tebx = %x,\tecx = %x,\nedx = %x,\tesi = %x,\tedi = %x\n", 
-            regs->eax, regs->ebx, regs->ecx, regs->edx, regs->esi, regs->edi);
-        
-        kprintf("esp = %x, \tebp = %x, \teip = %x, \neflags = %x, \tcs = %x, \tds = %x, \tss = %x\n",
-            regs->esp, regs->ebp, regs->eip, regs->eflags, regs->cs, regs->ds, regs->ss);
-
-        kprintf("Errorcode: %x\n", regs->error);
-
+        printReg(regs);
         panic("Kernel Panic", __FILE__, __LINE__);
     }
 }

@@ -1,22 +1,3 @@
-/* ENTRY(_start)
-
-PHDRS
-{
-    text PT_LOAD FLAGS(5);   
-    data PT_LOAD FLAGS(6);
-}
-SECTIONS
-{
-    . = 0x100000;
-    __kernel_start = .;
-    .multiboot  : {*(.multiboot*)}: text
-    .text       : { *(.text*) }:text
-    .rodata     : { *(.rodata*) } : text
-    .data       : { *(.data*)   } :data
-    .bss        : { *(COMMON) *(.bss*) } :data
-    __kernel_end = .;
-} */
-
 OUTPUT_FORMAT(elf32-i386)
 ENTRY(_start)
 
@@ -25,9 +6,11 @@ KERNEL_PHYS = 0x00100000;
 
 PHDRS
 {
-    boot PT_LOAD FLAGS(7);   /* R(4) + W(2) + X(1): .boot section */
-    text PT_LOAD FLAGS(5);   /* R(4) + X(1):         .text, .rodata */
-    data PT_LOAD FLAGS(6);   /* R(4) + W(2):         .data, .bss */
+    boot_text PT_LOAD FLAGS(5);         /* R(4) + X(1):     .multiboot, .boot.text */
+    boot_data PT_LOAD FLAGS(6);         /* R(4) + W(2):     .boot.data */
+    text PT_LOAD FLAGS(5);              /* R(4) + X(1):         .text, .rodata */
+    data PT_LOAD FLAGS(6);              /* R(4) + W(2):         .data, .bss */
+    user_wrapper PT_LOAD FLAGS(5);      /* R(4) + X(1):         .user_wrapper */
 }
 
 SECTIONS
@@ -36,12 +19,14 @@ SECTIONS
     . = KERNEL_PHYS;
     _kernel_phys_start = .;
     _kernel_virt_start = _kernel_phys_start + HIGHER_HALF;
-    .boot ALIGN(4096) :{
+    .boot ALIGN(4096) : {
         *(.multiboot)
         *(.boot.text)
-        . = ALIGN(4096);    /* page-align the static page tables */
+    } :boot_text
+    . = ALIGN(4096);
+    .boot.data : {
         *(.boot.data)
-    } :boot
+    } :boot_data
     _boot_end = .;
     . += HIGHER_HALF;
     
@@ -54,6 +39,11 @@ SECTIONS
         *(.bss*)
         _bss_end = .;
     } :data
+
+    .user_wrapper ALIGN(4096) : AT(ADDR(.user_wrapper) - HIGHER_HALF){
+        _user_wrapper_start = .;
+        *(.user_wrapper)
+    } :user_wrapper
 
     _kernel_virt_end = .;
     _kernel_phys_end = _kernel_virt_end - HIGHER_HALF;

@@ -30,7 +30,7 @@ $(BUILD_DIR)/kernel.elf: $(OBJS)
 	$(LD) -m elf_i386 -nostdlib -T linker.ld -o $(BUILD_DIR)/kernel.elf $^
 
 run:
-	qemu-system-i386 -kernel $(BUILD_DIR)/kernel.elf
+	qemu-system-i386 -d int,cpu_reset -no-reboot -kernel $(BUILD_DIR)/kernel.elf > $(BUILD_DIR)/qemu_log.txt 2>&1
 
 clear:
 	rm -rf $(BUILD_DIR)/*

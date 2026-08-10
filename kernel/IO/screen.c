@@ -14,7 +14,10 @@ static volatile uint16_t cursor_pos = 0;
 void putchar_withcolor(char c, uint16_t color) {
     volatile char *video = VGA_MEMORY;
 
-    if(cursor_pos >= ((uint32_t)VGA_MEMORY + 4000)) return;
+    if(cursor_pos >= ((uint32_t)VGA_MEMORY + 4000)){
+        cursor_pos = (uint32_t)VGA_MEMORY + 4000;
+        return;
+    }
 
     if (c == '\n') {
         cursor_pos += 160 - ((cursor_pos) % 160); // Move to the start of the next line

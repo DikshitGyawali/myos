@@ -1,4 +1,4 @@
-bits 32
+[bits 32]
 
 HIGHER_HALF    equ 0xC0000000
 KERNEL_PDE_IDX equ (HIGHER_HALF >> 22)   ; = 768
@@ -18,6 +18,7 @@ align 4
 section .boot.data
 align 4096
 global boot_pd
+global boot_stack_bottom
 boot_pd:        times 1024 dd 0
 
 align 4096
@@ -25,6 +26,9 @@ boot_pt_low:    times 1024 dd 0   ; PDE   0: VA 0x00000000–0x3FFFFF → PA 0x0
 
 align 4096
 boot_pt_high:   times 1024 dd 0   ; PDE 768: VA 0xC0000000–0xC3FFFFF → PA 0x0–0x3FFFFF
+
+align 4096
+boot_pt_1022: times 1024 dd 0 ; PDE 1022
 
 align 16
 boot_stack_bottom:
@@ -72,6 +76,10 @@ _start:
     mov  eax, boot_pt_high
     or   eax, 0x03
     mov  [boot_pd + KERNEL_PDE_IDX * 4], eax   ; PDE 768 → kernel high
+
+    mov  eax, boot_pt_1022
+    or   eax, 0x03
+    mov  [boot_pd + 1022 * 4], eax             ; PDE 1022 → for temporaty mapping needed for referencing other PD, while MMU is not allowing physical address
 
     mov  eax, boot_pd
     or   eax, 0x03

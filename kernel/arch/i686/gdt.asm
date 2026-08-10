@@ -32,3 +32,14 @@ i686_GDT_Load:
     mov esp, ebp
     pop ebp
 ret
+
+; void __attribute__((cdecl)) i686_TSS_Load(uint16_t index)
+global i686_TSS_Load
+i686_TSS_Load:
+    push ebp
+    mov ebp, esp
+    mov ax, [ebp + 8]
+    ltr ax
+    mov esp, ebp
+    pop ebp
+    ret
