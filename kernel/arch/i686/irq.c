@@ -2,7 +2,7 @@
 #include <arch/i686/pic.h>
 #include <arch/i686/i8259.h>
 #include <arch/i686/port_io.h>
-#include <io/screen.h>
+#include <IO/screen.h>
 #include <stddef.h>
 #define PIC_REMAP_OFFSET 0x20
 

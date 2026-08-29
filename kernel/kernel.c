@@ -19,8 +19,8 @@ void kernel_main(){
 
     kprintf("end: 0x%x\n", &_kernel_virt_end);
 
-    //shell_init();
-    create_process(short_task, false);
+    shell_init();
+    //create_process(short_task, false);
     multitask_init();
     
     while (1) {
