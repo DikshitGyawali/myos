@@ -7,8 +7,11 @@
 #include <arch/i686/port_io.h>
 #include <drivers/pit.h>
 #include <drivers/keyboard.h>
+#include <drivers/ata.h>
 #include <memory/pmm.h>
 #include <memory/paging.h>
+#include <fs/ext2.h>
+#include <task/task.h>
 
 void Drivers_init();
 
@@ -18,12 +21,12 @@ void HAL_init(){
     i686_ISR_init();
     i686_IRQ_init();
     Drivers_init();
-
     i686_EnableInterrupts();
 }
 
 void Drivers_init(){
     PIT_init(100);
     Keyboard_init();
+    ATA_init();
 }
 

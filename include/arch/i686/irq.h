@@ -8,7 +8,7 @@ typedef void (*IRQHandler)(Registers* regs);
 
 void i686_IRQ_init();
 void i686_IRQ_RegisterHandler(int irq, IRQHandler handler);
-
+void PIC_SendEOI(uint8_t irq);
 
 
 

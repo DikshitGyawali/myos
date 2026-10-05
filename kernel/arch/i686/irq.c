@@ -22,6 +22,10 @@ void i686_IRQ_Handler(Registers* regs){
     g_Driver->SendEOI(irq);
 }
 
+void PIC_SendEOI(uint8_t irq){
+    g_Driver->SendEOI(irq);
+}
+
 
 void i686_IRQ_init(){
 
@@ -45,11 +49,13 @@ void i686_IRQ_init(){
     }
 
     
-    g_Driver->Unmask(0); // timer
-    g_Driver->Unmask(1); //keyboard
+    g_Driver->Unmask(0);    // timer
+    g_Driver->Unmask(1);    // keyboard
+    g_Driver->Unmask(2);    // slave pic
+    g_Driver->Unmask(14);   // ata
 }
 
 
 void i686_IRQ_RegisterHandler(int irq, IRQHandler handler){
-    g_IRQHandlers[irq] = handler;   
+    g_IRQHandlers[irq] = handler;
 }

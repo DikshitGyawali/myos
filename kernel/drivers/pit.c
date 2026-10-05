@@ -3,12 +3,14 @@
 #include <arch/i686/port_io.h>
 #include <IO/screen.h>
 #include <stdint.h>
+#include <stddef.h>
 #include <shell/shell.h>
+#include <arch/i686/irq.h>
 
 #define PIT_CR 0x43
 #define PIT_DATA_CHANNEL0 0x40
 
-static volatile uint64_t g_ticks = 0;
+static volatile uint32_t g_ticks = 0;
 static uint32_t frequency = 100;
 
 typedef enum{
@@ -33,12 +35,16 @@ typedef enum{
     PIT_COMMAND_BINARY = 0x00
 } PIT_COMMAND;
 
+extern ISRHandler g_ISRHandlers[256];
 
 void PIT_Handler(Registers* regs)
 {
     (void)regs;
     g_ticks++;
-    //kprintf("%d ", g_ticks);
+    if (g_ticks % 5 == 0 && g_ISRHandlers[0x81] != NULL){
+        PIC_SendEOI(0);
+        __asm__ volatile ("int $0x81");
+    }
 }
 
 uint64_t PIT_GetTicks(){

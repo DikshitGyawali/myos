@@ -10,6 +10,7 @@ PHDRS
 
 SECTIONS
 {
+    . = 0x400000;
     .text : { *(.text*) } :text
     .rodata : { *(.rodata*) } :text
     .data : { *(.data*) } :data

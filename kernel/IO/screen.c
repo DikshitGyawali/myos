@@ -9,7 +9,7 @@
 #define KERNEL_BASE 0xC0000000
 #define VGA_MEMORY ((volatile char*)(KERNEL_BASE + 0xB8000))
 
-static volatile uint16_t cursor_pos = 0;
+static volatile uint32_t cursor_pos = 0;
 
 void putchar_withcolor(char c, uint16_t color) {
     volatile char *video = VGA_MEMORY;

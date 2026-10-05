@@ -2,6 +2,7 @@
 #include <IO/screen.h>
 #include <shell/shell.h>
 #include <task/task.h>
+#include <libs/string.h>
 #include <stddef.h>
 
 #define MAX_COMMAND_SIZE 256
@@ -10,17 +11,6 @@ ShellCommand g_CMDHandler[MAX_COMMAND_SIZE];
 
 void shell_CMD_Handler(char* command_name, char* args);
 void basic_commands();
-
-int strcmp(const char* a, const char* b){
-    while (*a && *b){
-        if (*a != *b)
-            return *a - *b;
-        a++;
-        b++;
-    }
-    return *a - *b;
-}
-
 
 void shell_ReadLine(char* buf, int max){
     int i = 0;

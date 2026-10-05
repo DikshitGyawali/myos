@@ -202,7 +202,7 @@ void* kmalloc(size_t payload_size){
     payload_size = (payload_size + 7) & ~7;
     block_header_t * free_block = find_free_block(payload_size);
     if (free_block == NULL){
-        if(!heap_expand(payload_size + MIN_BLOCK_SIZE))return NULL;
+        if(!heap_expand(payload_size + MIN_BLOCK_SIZE)) return NULL;
         free_block = find_free_block(payload_size);
         if (free_block == NULL) return NULL;
     }

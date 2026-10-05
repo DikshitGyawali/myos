@@ -6,7 +6,7 @@ STAGING_DIR = $(BUILD_DIR)/staging
 all: $(BUILD_DIR)/kernel.elf $(BUILD_DIR)/user.elf
 
 CC = i686-elf-gcc
-CFLAGS = -ffreestanding -m32 -fno-pic -Wall -Wextra -Iinclude
+CFLAGS = -ffreestanding -m32 -fno-pic -Wall -Wextra -Iinclude -g -O0
 LD = i686-elf-ld
 
 C_SRCS        := $(shell find . -name "*.c")
@@ -46,7 +46,7 @@ $(STAGING_DIR)/user.elf: $(BUILD_DIR)/user.elf
 	@mkdir -p $(STAGING_DIR)
 	cp $(BUILD_DIR)/user.elf $(STAGING_DIR)/user.elf
 
-$(BUILD_DIR)/disk.img: $(STAGING_DIR)/user.elf
+$(BUILD_DIR)/disk.img: $(STAGING_DIR)/user.elf 
 	rm -f $(BUILD_DIR)/disk.img
 	dd if=/dev/zero of=$(BUILD_DIR)/disk.img bs=1M count=16 status=none
 	mke2fs -F -t ext2 -b 1024 -d $(STAGING_DIR) $(BUILD_DIR)/disk.img
@@ -58,5 +58,7 @@ fs_img: $(BUILD_DIR)/disk.img
 run:
 	qemu-system-i386 -drive file=$(BUILD_DIR)/disk.img,format=raw,if=ide -d int,cpu_reset -no-reboot -kernel $(BUILD_DIR)/kernel.elf > $(BUILD_DIR)/qemu_log.txt 2>&1
 
+debug:
+	qemu-system-i386 -S -gdb tcp::1234 -drive file=$(BUILD_DIR)/disk.img,format=raw,if=ide -d int,cpu_reset -no-reboot -no-shutdown -kernel $(BUILD_DIR)/kernel.elf > $(BUILD_DIR)/qemu_log.txt 2>&1
 clear:
 	rm -rf $(BUILD_DIR)/*

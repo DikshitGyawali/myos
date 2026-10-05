@@ -5,7 +5,6 @@
 
 
 bool map_page(uintptr_t virtual_address, uintptr_t physical_address, uint32_t flags){
-    kprintf("Map Input: V=%x, P=%x, F=%x\n", virtual_address, physical_address, flags);
     if ((physical_address & 0xFFF) != 0) return false;
 
     uint32_t directory_index = virtual_address >> 22;
@@ -17,7 +16,7 @@ bool map_page(uintptr_t virtual_address, uintptr_t physical_address, uint32_t fl
         new_table_created = true;
 
         if(newPageTable_address == 0) return false;
-        PD_BASE_ADDRESS[directory_index] = newPageTable_address | flags; // changed from 0x03 to flags
+        PD_BASE_ADDRESS[directory_index] = newPageTable_address | flags;
 
         asm volatile("mov %%cr3, %%eax\nmov %%eax, %%cr3"::: "eax", "memory");
 
@@ -57,6 +56,18 @@ uintptr_t get_physical_address(uintptr_t virtual_address){
     if ((page_table[table_index] & 0x1) == 0) return 0;
 
     return (page_table[table_index] & ~0xFFF) | offset;
+}
+
+bool user_page_present(uintptr_t virtual_address){
+    uint32_t directory_index = virtual_address >> 22;
+    uint32_t table_index = (virtual_address >> 12) & 0x3FF;
+
+    if ((PD_BASE_ADDRESS[directory_index] & 0x5) != 0x5) return false;
+
+    uint32_t *page_table = (uint32_t *)((uintptr_t)PT_BASE_ADDRESS + directory_index * BLOCK_SIZE);
+
+    if ((page_table[table_index] & 0x5) != 0x5) return false;
+    return true;
 }
 
 

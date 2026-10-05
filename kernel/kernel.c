@@ -4,11 +4,15 @@
 #include <memory/heap.h>
 #include <task/task.h>
 #include <syscall/syscall.h>
-#include <memory/boot_info.h>
-extern TCB *running;
+#include <fs/vfs.h>
+#include <elf/elf.h>
 
-void short_task() {}
 
+void boot_init(){
+    if(!vfs_init()) kprintf("error intializing vfs\n");
+    int r = elf_exec("/user.elf");
+    kprintf("elf_exec errno (if any): %d\n",-r);
+}
 
 __attribute__((noreturn))
 void kernel_main(){
@@ -16,11 +20,10 @@ void kernel_main(){
     HAL_init();
     heap_init();
     syscall_isr_init();
-
     kprintf("end: 0x%x\n", &_kernel_virt_end);
-
+    
     shell_init();
-    //create_process(short_task, false);
+    if(!create_process(boot_init, true)) kprintf("creating failed\n");
     multitask_init();
     
     while (1) {

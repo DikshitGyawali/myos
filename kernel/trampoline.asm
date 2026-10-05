@@ -30,9 +30,9 @@ boot_pt_high:   times 1024 dd 0   ; PDE 768: VA 0xC0000000–0xC3FFFFF → PA 0x
 align 4096
 boot_pt_1022: times 1024 dd 0 ; PDE 1022
 
-align 16
+align 4096
 boot_stack_bottom:
-    times 4096 db 0
+    times 8192 db 0
 boot_stack_top:
 
 global saved_multiboot_ptr
